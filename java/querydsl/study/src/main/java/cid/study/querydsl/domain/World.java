@@ -5,14 +5,15 @@ import lombok.Setter;
 
 import javax.persistence.*;
 
-@Entity
 @Getter
 @Setter
-public class Hello {
+@Entity
+public class World {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "desci")
-    private String description;
+    @Column(name = "description")
+    private String desc;
 }
