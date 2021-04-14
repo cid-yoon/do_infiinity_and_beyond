@@ -40,6 +40,7 @@ class QuerydslApplicationTests {
 
 
         World world = new World();
+        world.setDesc("aaaa");
         em.persist(world);
 
     }
