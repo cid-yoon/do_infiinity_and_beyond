@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package person;
-
-message Person {
-    string Name = 1;
-    uint32 Age  = 2;
-}

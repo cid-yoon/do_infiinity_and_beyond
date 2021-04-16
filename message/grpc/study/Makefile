@@ -4,27 +4,24 @@ BEFORE_PATH=productinfo
 
 proto_before: proto_format
 	protoc \
-	-I=./${BEFORE_PATH} \
-	--go_out=:./${BEFORE_PATH} \
-	--go_opt=module=github.com/cid-yoon/grpc/${BEFORE_PATH} \
-	./${BEFORE_PATH}/proto/*.proto
+	-I=./productinfo \
+	--go_out=:./productinfo/go/server/ecommerce \
+	--go_opt=module=github.com/cid-yoon/grpc/productinfo/go/server/ecommerce \
+	./productinfo/proto/*.proto
 
-AFTER_PATH=after
 
-proto_after: proto_format
+proto_before_next: proto_format
 	protoc \
-	-I=./${AFTER_PATH} \
-	--go_out=:./${AFTER_PATH} \
-	--go_opt=module=github.com/cid-yoon/grpc-sample/go-package-option/${AFTER_PATH} \
-	./${AFTER_PATH}/team/*.proto \
-	./${AFTER_PATH}/person/*.proto
+	-I productinfo/ \
+	productinfo/proto/product_info.proto \
+	--go_out=plugins=grpc:go/server/ecommerce
+
+
 
 proto_format:
-	find ./before -name "*.proto"
-	find ./after -name "*.proto"
+	find ./productinfo/proto -name "*.proto"
 
 clean:
-	find ./before -name "*.pb.go" | xargs rm
-	find ./after -name "*.pb.go" | xargs rm
+	find ./productinfo/go/server/ecommerce -name "*.pb.go" | xargs rm
 
 
