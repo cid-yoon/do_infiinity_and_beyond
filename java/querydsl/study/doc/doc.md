@@ -86,8 +86,7 @@ class MemberTest {
         Assertions.assertThat(findMember.getUserName()).isEqualTo("member1");
     }
 
-    // prepare statement의 parameter binding 방식을 사용
-    // 문자가 아닌 type으로 작성
+
     @Test
     public void startQueryDsl() {
 
@@ -107,3 +106,53 @@ class MemberTest {
 }
 
 ```
+
+### 장점
+
+`prepare statement의 parameter binding` 방식을 사용 문자가 아닌 type으로 작성
+
+`정적 타입처럼 사용` 할 수 있기에 실수를 방지
+
+JPAQueryFactory는 필드 레벨로 가져 가서 사용 가능
+
+* EM 자체가 MultiThread에 영향 받지 않게 되어 있음
+
+## 복수 개 가져오기
+
+```java
+
+public class TEST {
+    @Test
+    @DisplayName("결과 조회 - 페이징, limit")
+    public void resultFetchResult() {
+
+        // member 1을 찾아라
+        QueryResults<Member> findMember = factory
+                .selectFrom(member)
+                .fetchResults();
+
+        // 호출을 2번 수행, 페이징
+        List<Member> members = findMember.getResults();
+        long count = findMember.getTotal();
+
+
+        // 한번만
+        Member first = factory.selectFrom(member)
+                .fetchFirst();
+
+        // 제한 된 개수
+        QueryResults<Member> limits = factory.selectFrom(member)
+                .limit(1)
+                .fetchResults();
+
+
+        // count만
+        long total = factory.selectFrom(member).fetchCount();
+        members = factory.select(member).fetch();
+    }
+}
+
+```
+
+> fetchResult 같은 경우에 페이징 쿼리가 복잡해지면 데이터(컨텐츠)를 가져오는 쿼리랑 totalCount를 가져오는 쿼리가 다를때가 있음(성능 최적화를 위해)
+> 이렇게 성능이 중요하고 복잡해 지는 경우에는 fetchResult 대신 컨텐츠, 카운트 호출을 두번 하는게 더 좋음
