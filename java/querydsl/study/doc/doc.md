@@ -156,3 +156,81 @@ public class TEST {
 
 > fetchResult 같은 경우에 페이징 쿼리가 복잡해지면 데이터(컨텐츠)를 가져오는 쿼리랑 totalCount를 가져오는 쿼리가 다를때가 있음(성능 최적화를 위해)
 > 이렇게 성능이 중요하고 복잡해 지는 경우에는 fetchResult 대신 컨텐츠, 카운트 호출을 두번 하는게 더 좋음
+
+### 페이징
+
+```java
+
+// offset 1, limit 2
+// member 1 ~4 중에 3,2가 뽑힘
+List<Member> result=factory
+        .selectFrom(member)
+        .orderBy(member.userName.desc())
+        .offset(1)
+        .limit(2)
+        .fetch();
+
+```
+
+### 집합
+
+```java
+        /**
+ * 튜플로 반환, 여러개의 타입이 있을때 가져옴
+ * select {alias 집계함수}
+ */
+        List<Tuple> results=factory
+        .select(
+        member.count(),
+        member.age.sum(),
+        member.age.avg(),
+        member.age.max(),
+        member.age.min()
+        )
+        .from(member)
+        .fetch();
+
+/**
+ * 데이터 타입이 여러개가 들어오기에 Tuple을 사용
+ * 실무에서는 DTO로 뽑아오는 걸 많이 사용
+ */
+```
+
+### 그룹
+
+```java
+
+@Test
+@DisplayName("그룹")
+public class TEST {
+    public void group() throws Exception {
+
+        /**
+         * 팀의 이름과 각 팀의 평균 연령을 구해라
+         * join 후 grouping
+         * member.team, team == member.team.id == team.id
+         */
+        // Given
+        List<Tuple> result = factory.select(team.name, member.age.avg())
+                .from(member)
+                .join(member.team, team)
+                .groupBy(team.name)
+                .fetch();
+
+        Tuple teamA = result.get(0);
+        Tuple teamB = result.get(1);
+
+        assertThat(teamA.get(team.name)).isEqualTo("teamA");
+        assertThat(teamA.get(member.age.avg())).isEqualTo(15); // (10 + 20) / 2
+
+        assertThat(teamB.get(team.name)).isEqualTo("teamB");
+        assertThat(teamB.get(member.age.avg())).isEqualTo(35); // (30 + 40) / 2
+
+        // When
+
+        // Then
+
+
+    }
+}
+```
