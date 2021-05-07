@@ -15,7 +15,6 @@ import java.util.List;
 
 import static cid.study.querydsl.domain.example.QMember.member;
 import static cid.study.querydsl.domain.example.QTeam.team;
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -298,11 +297,94 @@ class MemberTest {
         assertThat(teamB.get(team.name)).isEqualTo("teamB");
         assertThat(teamB.get(member.age.avg())).isEqualTo(35); // (30 + 40) / 2
 
-        // When
+    }
 
-        // Then
+    /**
+     * JPQL : select m, t from Member m
+     * left join m.team t
+     * on t.name = 'teamA'
+     */
+    @Test
+    @DisplayName("회원과 팀을 조인하여 팀이름이 teamA인 팀만 조인, 회원은 모두 조회")
+    public void join_on_filtering() {
+
+        List<Tuple> result = factory.select(member, team)
+                .from(member)
+                .leftJoin(member.team, team)
+                .on(team.name.eq("teamA"))
+                .fetch();
 
 
+        for (Tuple t : result) {
+            System.out.println(t);
+        }
+
+    }
+
+    @Test
+    @DisplayName("inner join은 where와 동일한 결과를 나오게함-있는넘만 나오게, on 또는 where가 같이 돌아요")
+    public void join_on_filtering_inner() {
+
+        // 이런 경우에는 where를 쓰는게 더 익숙
+        List<Tuple> result = factory.select(member, team)
+                .from(member)
+                .innerJoin(member.team, team)
+                .on(team.name.eq("teamA"))
+                .fetch();
+
+
+        for (Tuple t : result) {
+            System.out.println(t);
+        }
+
+    }
+
+    @Test
+    @DisplayName("회원의 이름이 팀 이름과 같은 회원 조회 - 세타 조인")
+    public void join_on_no_relation_all() {
+        em.persist(new Member("teamA"));
+        em.persist(new Member("teamB"));
+        em.persist(new Member("teamC"));
+
+        List<Member> result = factory
+                .select(member)
+                .from(member, team)
+                .where(member.userName.eq(team.name))
+                .fetch();
+
+        assertThat(result)
+                .extracting("userName")
+                .containsExactly("teamA", "teamB");
+    }
+
+    @Test
+    @DisplayName("연관 관계없는 엔티티 외부 조인 - 회원의이름이 팀 이름과 같은 대상 외부 조인")
+    public void join_on_no_relation() {
+        em.persist(new Member("teamA"));
+        em.persist(new Member("teamB"));
+        em.persist(new Member("teamC"));
+
+        /* select
+                member1,
+                team
+            from
+                Member member1
+            left join
+                Team team with member1.userName = team.name
+        */
+
+        List<Tuple> result = factory
+                .select(member, team)
+                .from(member)
+                .leftJoin(team) //  from a, b가 아닌 뭉텡이 조인, 관계가 없어, id로 매칭이 안되고 이름으로만 되버림, 막조인
+                //.leftJoin(member, team) // id로 매칭
+                .on(member.userName.eq(team.name))
+                .fetch();
+
+
+        for (Tuple t : result) {
+            System.out.println(t);
+        }
     }
 
 
