@@ -2,12 +2,12 @@ package webserver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.HttpUtils;
+import util.RequestCommand;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
 
 
 public class RequestHandler {
@@ -20,13 +20,34 @@ public class RequestHandler {
     }
 
     public void run() {
-        log.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(),
+        log.debug("New Client Connect! Connected IP : {}, Port : {}",
+                connection.getInetAddress(),
                 connection.getPort());
+
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
+
+            InputStreamReader inputStreamReader = new InputStreamReader(in);
+            BufferedReader br = new BufferedReader(inputStreamReader);
+            String message = br.readLine();
+
+            if (message == null) {
+                return;
+            }
+
+            String[] tokens = HttpUtils.tokenize(message);
+            RequestCommand requestCommand = RequestCommand.create(tokens);
+
+            while (!"".equals(message)) {
+
+                log.debug(message);
+                message = br.readLine();
+            }
+
 
             // 사용자 요청 처리는 이곳에서 구현
             DataOutputStream dos = new DataOutputStream(out);
-            byte[] body = "Hello World".getBytes();
+            byte[] body = Files.readAllBytes(new File("./webapp" + requestCommand.getPath()).toPath());
+
             response200Header(dos, body.length);
             responseBody(dos, body);
         } catch (IOException e) {
