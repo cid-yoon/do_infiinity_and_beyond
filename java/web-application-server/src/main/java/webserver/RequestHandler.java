@@ -1,13 +1,15 @@
 package webserver;
 
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.HttpUtils;
+import util.HttpRequestUtils;
 import util.RequestCommand;
 
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.util.Map;
 
 
 public class RequestHandler {
@@ -34,8 +36,14 @@ public class RequestHandler {
                 return;
             }
 
-            String[] tokens = HttpUtils.tokenize(message);
-            RequestCommand requestCommand = RequestCommand.create(tokens);
+            String[] tokens = HttpRequestUtils.tokenize(message);
+            RequestCommand command = RequestCommand.create(tokens);
+
+            String queryString = HttpRequestUtils.parseQueryString(command.getPath());
+            Map<String, String> paramMap = HttpRequestUtils.toMap(queryString);
+            User user = User.create(paramMap);
+
+            log.info(user.toString());
 
             while (!"".equals(message)) {
 
@@ -46,7 +54,7 @@ public class RequestHandler {
 
             // 사용자 요청 처리는 이곳에서 구현
             DataOutputStream dos = new DataOutputStream(out);
-            byte[] body = Files.readAllBytes(new File("./webapp" + requestCommand.getPath()).toPath());
+            byte[] body = Files.readAllBytes(new File("./webapp" + command.getPath()).toPath());
 
             response200Header(dos, body.length);
             responseBody(dos, body);

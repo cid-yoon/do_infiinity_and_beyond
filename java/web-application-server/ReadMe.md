@@ -37,19 +37,32 @@ InputStream의 제어, 버퍼스트림을 통해 한줄씩 읽기
 ```http request
 /user/create?userId=javajigi&password=password&name=Jaesung&email=javagigi%40slipp.net
 ```
-HTML과 URL을 비교해 보고 사용자가 입력한 값을 파싱(문자열을ㅇ 원하는 형태로 분리하거나 조작하는 것을 의미)해 model.User 클래스에 저장한다
+HTML과 URL을 비교해 보고 사용자가 입력한 값을 파싱(문자열을 원하는 형태로 분리하거나 조작하는 것을 의미)해 model.User 클래스에 저장한다
 
 ```markdown
 Http 요청의 첫번째 라인에서 요청 URL을 추출한다
 요청 Url에서 접근경로와 이름=값으로 전달되는 데이터를 추출해 User 클래스에 담는다
 구현은 가능하면 Junit을 활용해 단위 테스트를 진행하면서 하면 좀더 효과적으로 개발 가능하다
 이름=값 파싱은 util.HttpRequestUtils 클래스의 parseQueryString 메소드를 활용한다
-요청 Url과 이름 갓을 분리해야 한다
+요청 Url과 이름을 각각 분리해야 한다
 * string url = "/?data=234"
 * int index = uri.indexOf("?")
 * string reuqestPath = url.substring(0,index)
 * String params = url.substring(index+1)
 ```
+무엇을 느끼고 학습했는가?
+```markdown
+테스트 코드 먼저 만들어 보기
+요구사항이 발생할 때마다 테스트 & 기능 늘리기
+쿼리 스트링은  ? 문자로 스트링을 전달하며 해당 데이터의 값은 key=value 형태로 전달된다
+- key=value는 여러 값이 중첩되어 올 수 있으며 해당 값은 & 연산자로 구분할 수 있다
+
+split 메소드의 경우 특수 문자를 분해하기 위해서는 [?] 또는 //? 같은 처리를 해 주어야 한다
+성능적으로 분리될때마다 객체가 생성되기에 indexOf를 통한 subString이 미묘하게 좋을 듯?
+
+
+아주 단순한 내용이지만 프로토콜을 하나씩 훓어가는 재미가 있다
+- 커밋을 좀 더 자주 했어야 하는데 아쉬웠다
 
 ### 요구사항 3 - post 방식으로 회원가입
 
