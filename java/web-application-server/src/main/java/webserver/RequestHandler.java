@@ -4,6 +4,7 @@ import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
+import util.IOUtils;
 import util.RequestCommand;
 
 import java.io.*;
@@ -39,18 +40,19 @@ public class RequestHandler {
             String[] tokens = HttpRequestUtils.tokenize(message);
             RequestCommand command = RequestCommand.create(tokens);
 
-            String queryString = HttpRequestUtils.parseQueryString(command.getPath());
-            Map<String, String> paramMap = HttpRequestUtils.toMap(queryString);
-            User user = User.create(paramMap);
+            Map<String, String> headers = HttpRequestUtils.parseHeader(br);
+            User user = null;
+            if ("GET".equals(command.getMethod())) {
+                String queryString = HttpRequestUtils.parseQueryString(command.getPath());
+                Map<String, String> paramMap = HttpRequestUtils.toMap(queryString);
+                user = User.create(paramMap);
+            } else if ("POST".equals(command.getMethod())) {
 
-            log.info(user.toString());
-
-            while (!"".equals(message)) {
-
-                log.debug(message);
-                message = br.readLine();
+                String contentLength = headers.get("Content-Length");
+                String body = IOUtils.readData(br, Integer.parseInt(contentLength));
+                Map<String, String> paramMap = HttpRequestUtils.toMap(body);
+                user = User.create(paramMap);
             }
-
 
             // 사용자 요청 처리는 이곳에서 구현
             DataOutputStream dos = new DataOutputStream(out);

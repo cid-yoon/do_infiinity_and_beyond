@@ -1,5 +1,7 @@
 package util;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -98,6 +100,21 @@ public class HttpRequestUtils {
         }
 
         return true;
+
+    }
+
+    public static Map<String, String> parseHeader(BufferedReader br) throws IOException {
+
+        HashMap<String, String> headers = new HashMap<>();
+        String message = br.readLine();
+        while (!"".equals(message)) {
+            String[] tokens = tokenize(": ", message);
+            headers.put(tokens[0], tokens[1]);
+
+            message = br.readLine();
+        }
+
+        return headers;
 
     }
 }

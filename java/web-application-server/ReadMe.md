@@ -63,8 +63,20 @@ split 메소드의 경우 특수 문자를 분해하기 위해서는 [?] 또는 
 
 아주 단순한 내용이지만 프로토콜을 하나씩 훓어가는 재미가 있다
 - 커밋을 좀 더 자주 했어야 하는데 아쉬웠다
+```
 
 ### 요구사항 3 - post 방식으로 회원가입
+form 파일의 form 태그 method를 get에서 post로 수정한 후 회원 가입이 정상적으로 동작하도록 구현
+```markdown
+POST /user/create HTTP1.1
+Host: localhost:8080
+Connection: keep-aliver
+Content-Length: 59
+Content-Type: application/x-www-form-urlencoded
+Accept: */*
+
+
+```
 
 ### 요구사항 4 - redirect 방식으로 이동
 
