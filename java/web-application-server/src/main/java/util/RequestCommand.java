@@ -22,11 +22,11 @@ public class RequestCommand {
         return method;
     }
 
-    public String getPath() {
+    public String fullPath() {
         return path;
     }
 
-    public String getProtocol() {
+    public String protocol() {
         return protocol;
     }
 

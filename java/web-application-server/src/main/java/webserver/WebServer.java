@@ -13,7 +13,7 @@ public class WebServer {
     private static final int DEFAULT_PORT = 8080;
     private static final Logger log = LoggerFactory.getLogger(WebServer.class);
 
-    public static void main(String args[]) throws IOException {
+    public static void main(String[] args) throws IOException {
 
         int port = 0;
         if (args == null || args.length == 0) {

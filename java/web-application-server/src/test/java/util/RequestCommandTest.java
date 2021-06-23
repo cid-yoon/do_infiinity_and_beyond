@@ -15,13 +15,13 @@ class RequestCommandTest {
         assertThat(command.getMethod()).isNotBlank();
         assertThat(command.getMethod()).isEqualTo("aaa");
 
-        assertThat(command.getPath()).isNotEmpty();
-        assertThat(command.getPath()).isNotBlank();
-        assertThat(command.getPath()).isEqualTo("bbb");
+        assertThat(command.fullPath()).isNotEmpty();
+        assertThat(command.fullPath()).isNotBlank();
+        assertThat(command.fullPath()).isEqualTo("bbb");
 
-        assertThat(command.getProtocol()).isNotEmpty();
-        assertThat(command.getProtocol()).isNotBlank();
-        assertThat(command.getProtocol()).isEqualTo("ccc");
+        assertThat(command.protocol()).isNotEmpty();
+        assertThat(command.protocol()).isNotBlank();
+        assertThat(command.protocol()).isEqualTo("ccc");
 
         assertThat(command.toString()).contains(tokens);
 

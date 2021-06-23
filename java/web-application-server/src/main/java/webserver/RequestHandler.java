@@ -16,7 +16,7 @@ import java.util.Map;
 public class RequestHandler {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
 
-    private Socket connection;
+    private final Socket connection;
 
     public RequestHandler(Socket connectionSocket) {
         this.connection = connectionSocket;
@@ -41,25 +41,31 @@ public class RequestHandler {
             RequestCommand command = RequestCommand.create(tokens);
 
             Map<String, String> headers = HttpRequestUtils.parseHeader(br);
-            User user = null;
             if ("GET".equals(command.getMethod())) {
-                String queryString = HttpRequestUtils.parseQueryString(command.getPath());
-                Map<String, String> paramMap = HttpRequestUtils.toMap(queryString);
-                user = User.create(paramMap);
+                String queryString = HttpRequestUtils.parseQueryString(command.fullPath());
+                //Map<String, String> paramMap = HttpRequestUtils.toMap(queryString);
+
+                // 사용자 요청 처리는 이곳에서 구현
+                DataOutputStream dos = new DataOutputStream(out);
+                byte[] body = Files.readAllBytes(new File("./webapp" + command.fullPath()).toPath());
+                response200Header(dos, body.length);
+                responseBody(dos, body);
+
             } else if ("POST".equals(command.getMethod())) {
 
                 String contentLength = headers.get("Content-Length");
-                String body = IOUtils.readData(br, Integer.parseInt(contentLength));
-                Map<String, String> paramMap = HttpRequestUtils.toMap(body);
-                user = User.create(paramMap);
+                String bodyDataString = IOUtils.readData(br, Integer.parseInt(contentLength));
+                Map<String, String> paramMap = HttpRequestUtils.toMap(bodyDataString);
+
+                User user = new User(paramMap.get("userId"), paramMap.get("password"), paramMap.get("name"), paramMap.get("email"));
+                System.out.println(user);
+
+                // 사용자 요청 처리는 이곳에서 구현
+                DataOutputStream dos = new DataOutputStream(out);
+                response302Header(dos);
             }
 
-            // 사용자 요청 처리는 이곳에서 구현
-            DataOutputStream dos = new DataOutputStream(out);
-            byte[] body = Files.readAllBytes(new File("./webapp" + command.getPath()).toPath());
 
-            response200Header(dos, body.length);
-            responseBody(dos, body);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
@@ -72,6 +78,16 @@ public class RequestHandler {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response302Header(DataOutputStream dos) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Found \r\n");
+            dos.writeBytes("Location: " + "http://localhost:8888/index.html" + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
