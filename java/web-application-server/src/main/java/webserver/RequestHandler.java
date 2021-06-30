@@ -2,11 +2,12 @@ package webserver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.IOUtils;
+import util.HTTPUtils;
 
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 
 public class RequestHandler {
@@ -28,10 +29,14 @@ public class RequestHandler {
 
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
             String readLine = bufferedReader.readLine();
+
+            String[] tokens = HTTPUtils.methodTokenize(readLine);
+            ReadMethodLine methodLine = new ReadMethodLine(tokens);
+
+            byte[] result = Files.readAllBytes(new File("./webapp" + methodLine.getPath()).toPath());
             while (!"".equals(readLine)){
 
                 log.info(readLine);
-
                 readLine = bufferedReader.readLine();
             }
 
@@ -41,14 +46,11 @@ public class RequestHandler {
             // 출력을 위해 outputstream에 버퍼를 연결
             DataOutputStream dos = new DataOutputStream(out);
 
-            // 반환해줄 데이터 설정
-            byte[] body ="Hello world".getBytes(StandardCharsets.UTF_8);
-
             // 헤더를 통해 바디가 얼만큼인지 설정
-            response200Header(dos, body.length);
+            response200Header(dos, result.length);
 
             // 바디에 전달해줄 값을 전송
-            responseBody(dos, body);
+            responseBody(dos, result);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
