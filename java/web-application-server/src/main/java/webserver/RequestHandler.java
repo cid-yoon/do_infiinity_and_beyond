@@ -2,6 +2,7 @@ package webserver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.IOUtils;
 
 import java.io.*;
 import java.net.Socket;
@@ -24,6 +25,17 @@ public class RequestHandler {
                 connection.getPort());
 
         try(InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()){
+
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
+            String readLine = bufferedReader.readLine();
+            while (!"".equals(readLine)){
+
+                log.info(readLine);
+
+                readLine = bufferedReader.readLine();
+            }
+
+
 
             // 소켓을 통해 버퍼를 읽고 쓰기
             // 출력을 위해 outputstream에 버퍼를 연결
