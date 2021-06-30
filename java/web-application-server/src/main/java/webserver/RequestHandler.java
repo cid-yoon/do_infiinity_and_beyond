@@ -8,7 +8,9 @@ import util.IOUtils;
 import util.RequestCommand;
 
 import java.io.*;
+import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Map;
 
@@ -23,52 +25,29 @@ public class RequestHandler {
     }
 
     public void run() {
+
         log.debug("New Client Connect! Connected IP : {}, Port : {}",
                 connection.getInetAddress(),
                 connection.getPort());
 
-        try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
+        try(InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()){
 
-            InputStreamReader inputStreamReader = new InputStreamReader(in);
-            BufferedReader br = new BufferedReader(inputStreamReader);
-            String message = br.readLine();
+            // 소켓을 통해 버퍼를 읽고 쓰기
+            // 출력을 위해 outputstream에 버퍼를 연결
+            DataOutputStream dos = new DataOutputStream(out);
 
-            if (message == null) {
-                return;
-            }
+            // 반환해줄 데이터 설정
+            byte[] body ="Hello world".getBytes(StandardCharsets.UTF_8);
 
-            String[] tokens = HttpRequestUtils.tokenize(message);
-            RequestCommand command = RequestCommand.create(tokens);
+            // 헤더를 통해 바디가 얼만큼인지 설정
+            response200Header(dos, body.length);
 
-            Map<String, String> headers = HttpRequestUtils.parseHeader(br);
-            if ("GET".equals(command.getMethod())) {
-                String queryString = HttpRequestUtils.parseQueryString(command.fullPath());
-                //Map<String, String> paramMap = HttpRequestUtils.toMap(queryString);
-
-                // 사용자 요청 처리는 이곳에서 구현
-                DataOutputStream dos = new DataOutputStream(out);
-                byte[] body = Files.readAllBytes(new File("./webapp" + command.fullPath()).toPath());
-                response200Header(dos, body.length);
-                responseBody(dos, body);
-
-            } else if ("POST".equals(command.getMethod())) {
-
-                String contentLength = headers.get("Content-Length");
-                String bodyDataString = IOUtils.readData(br, Integer.parseInt(contentLength));
-                Map<String, String> paramMap = HttpRequestUtils.toMap(bodyDataString);
-
-                User user = new User(paramMap.get("userId"), paramMap.get("password"), paramMap.get("name"), paramMap.get("email"));
-                System.out.println(user);
-
-                // 사용자 요청 처리는 이곳에서 구현
-                DataOutputStream dos = new DataOutputStream(out);
-                response302Header(dos);
-            }
-
-
+            // 바디에 전달해줄 값을 전송
+            responseBody(dos, body);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+
 
     }
 
